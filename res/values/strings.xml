@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OneUI 8.5 AI Notifications</string>
-    <string name="app_description">Unlocks Samsung Priority Notification Highlights and AI Notification Summaries on compatible One UI firmware.</string>
+    <string name="app_description">Unlocks Samsung Priority Notification Highlights, AI Notification Summaries, and keyboard Now Nudge on compatible One UI firmware.</string>
 </resources>

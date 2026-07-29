@@ -2,5 +2,8 @@
 <resources>
     <string-array name="xposed_scope">
         <item>android</item>
+        <item>com.samsung.android.smartsuggestions</item>
+        <item>com.samsung.android.honeyboard</item>
+        <item>com.android.settings</item>
     </string-array>
 </resources>

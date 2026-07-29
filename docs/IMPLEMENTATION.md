@@ -96,3 +96,43 @@ waited because only 74 seconds had elapsed since the final update.
 construction. Changing a Secure setting after initialization cannot create a
 manager that was skipped. The module therefore sets both `NmRune` fields before
 every `NotificationManagerService` constructor.
+# Now Nudge and Chinese engine implementation
+
+Version 1.5 provides a narrowly scoped keyboard-inline Now Nudge path:
+
+- `com.samsung.android.smartsuggestions`: forces
+  `Rune.getSUPPORT_NOW_NUDGE()` to true and keeps
+  `Rune.getSUPPORT_AMBIENT_NUDGE()` false.
+- `com.samsung.android.honeyboard`: enables the receiver-registration flags
+  already present in Samsung Keyboard 5.9.30.97.
+- `com.android.settings`: returns available from the existing
+  `NowNudgesGalaxyAIController`.
+
+The module does not install the API 37 Launcher from the source firmware.
+
+HoneyBoard 5.9.30.97 has two relevant code layouts:
+
+- The global build uses `Y8.a`, `k7.g`, and `lj.c`.
+- The China-release build uses `sj.d`, `md.c`, and `o50.e`.
+
+The module detects the active layout at runtime. Global-build static rune
+changes are delayed until after `HoneyBoardApplication.attachBaseContext`
+finishes because initializing `Y8.a` before Koin starts crashes the keyboard.
+
+The global APK has the Java Sogou integration but does not contain the Sogou
+native libraries. A compatible Samsung-signed China/TGY HoneyBoard APK supplies
+those libraries. The offline database is extracted by the HoneyBoard process
+to:
+
+```text
+/data/user/0/com.samsung.android.honeyboard/files/oneui85-sogou-db-v2/
+```
+
+The database resolver is redirected to that app-owned directory. This avoids
+root-created app-data directories, which cannot be repaired reliably under
+KernelSU LKM SELinux categories.
+
+If a separately extracted XT9 payload exists under Samsung Keyboard's files
+directory, the global HoneyBoard hook changes only its cached XT9 preload path
+to that directory. The stock preload path remains unchanged when the payload
+is absent.
