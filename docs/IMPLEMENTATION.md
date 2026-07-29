@@ -98,7 +98,7 @@ manager that was skipped. The module therefore sets both `NmRune` fields before
 every `NotificationManagerService` constructor.
 # Now Nudge and Chinese engine implementation
 
-Version 1.5 provides a narrowly scoped keyboard-inline Now Nudge path:
+Version 1.6 provides a narrowly scoped keyboard-inline Now Nudge path:
 
 - `com.samsung.android.smartsuggestions`: forces
   `Rune.getSUPPORT_NOW_NUDGE()` to true and keeps
@@ -131,6 +131,12 @@ to:
 The database resolver is redirected to that app-owned directory. This avoids
 root-created app-data directories, which cannot be repaired reliably under
 KernelSU LKM SELinux categories.
+
+On a non-China CSC, the China-release APK applies an additional preference
+visibility filter even after the Sogou engine is enabled. Version 1.6 overrides
+that filter only for the Chinese input category and its Sogou, detailed
+dictionary, rare-word, Traditional Chinese, fuzzy-Pinyin, and Shuangpin
+preferences. Other HoneyBoard settings retain their stock visibility rules.
 
 If a separately extracted XT9 payload exists under Samsung Keyboard's files
 directory, the global HoneyBoard hook changes only its cached XT9 preload path

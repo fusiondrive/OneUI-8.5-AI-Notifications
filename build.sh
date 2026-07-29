@@ -24,7 +24,7 @@ fi
 
 BUILD_TOOLS="$SDK_DIR/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK_DIR/platforms/android-36/android.jar"
-OUTPUT_APK="$DIST_DIR/OneUI-8.5-AI-Notifications-v1.5.apk"
+OUTPUT_APK="$DIST_DIR/OneUI-8.5-AI-Notifications-v1.6.apk"
 
 for required_file in \
     "$BUILD_TOOLS/aapt2" \
@@ -54,8 +54,8 @@ mkdir -p "$BUILD_DIR/compiled-res" "$BUILD_DIR/generated" \
     -A "$PROJECT_DIR/assets" \
     --min-sdk-version 34 \
     --target-sdk-version 36 \
-    --version-code 6 \
-    --version-name 1.5 \
+    --version-code 7 \
+    --version-name 1.6 \
     "$BUILD_DIR/compiled-res/resources.zip"
 
 find "$PROJECT_DIR/src" "$BUILD_DIR/generated" -name '*.java' -print \

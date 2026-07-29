@@ -87,7 +87,7 @@ XT9 database can also be selected from:
 
 ## Installation
 
-1. Install `dist/OneUI-8.5-AI-Notifications-v1.5.apk`.
+1. Install `dist/OneUI-8.5-AI-Notifications-v1.6.apk`.
 2. Open LSPosed and enable **OneUI 8.5 AI Notifications**.
 3. Select **System Framework** for notification features.
 4. For Now Nudge, also select **Smart Suggestions**, **Samsung Keyboard**, and

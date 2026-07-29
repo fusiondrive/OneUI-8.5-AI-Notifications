@@ -37,6 +37,11 @@ public final class PriorityNotificationHook
     private static final String HONEYBOARD_CHINA_RUNE_CLASS = "sj.d";
     private static final String HONEYBOARD_CHINA_REGION_CLASS = "md.c";
     private static final String HONEYBOARD_CHINA_DATABASE_PATH_CLASS = "o50.e";
+    private static final String HONEYBOARD_COMMON_SETTINGS_FRAGMENT_CLASS =
+            "com.samsung.android.honeyboard.settings.common.CommonSettingsFragmentCompat";
+    private static final String HONEYBOARD_CHINESE_OPTIONS_FRAGMENT_CLASS =
+            "com.samsung.android.honeyboard.settings.chineseinputoptions."
+                    + "ChineseInputOptionsFragment";
     private static final String HONEYBOARD_APPLICATION_CLASS =
             "com.samsung.android.honeyboard.app.HoneyBoardApplication";
     private static final String SETTINGS_NOW_NUDGE_CONTROLLER =
@@ -154,10 +159,51 @@ public final class PriorityNotificationHook
                     XposedHelpers.findClass(HONEYBOARD_CHINA_RUNE_CLASS, classLoader);
             forceBooleanResult(rune, "m3", true);
             forceBooleanResult(rune, "l3", true);
+            installChinaKeyboardSettingsHooks(classLoader);
             log("Samsung Keyboard China-build Sogou and Now Nudge gates forced on");
         } catch (Throwable throwable) {
             logThrowable("Samsung Keyboard China-build feature hook failed", throwable);
         }
+    }
+
+    private static void installChinaKeyboardSettingsHooks(ClassLoader classLoader) {
+        Class<?> commonSettings =
+                XposedHelpers.findClass(
+                        HONEYBOARD_COMMON_SETTINGS_FRAGMENT_CLASS, classLoader);
+        XC_MethodHook visibilityHook =
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) {
+                        if (param.args.length == 1
+                                && param.args[0] instanceof String
+                                && isChinesePreferenceKey((String) param.args[0])) {
+                            param.setResult(true);
+                        }
+                    }
+                };
+        XposedBridge.hookAllMethods(
+                commonSettings, "isPreferenceVisible", visibilityHook);
+        XposedBridge.hookAllMethods(
+                commonSettings, "isPreferenceEnable", visibilityHook);
+
+        Class<?> chineseOptions =
+                XposedHelpers.findClass(
+                        HONEYBOARD_CHINESE_OPTIONS_FRAGMENT_CLASS, classLoader);
+        XposedBridge.hookAllMethods(chineseOptions, "V0", resultHook(null));
+        log("Samsung Keyboard Chinese settings entries forced visible");
+    }
+
+    private static boolean isChinesePreferenceKey(String key) {
+        return "enhanced_prediction".equals(key)
+                || "SETTINGS_SIMPLIFIED_CHINESE_SETTINGS".equals(key)
+                || "setting_db_update_key".equals(key)
+                || "SETTINGS_DEFAULT_CLOUD_LINK".equals(key)
+                || "SETTINGS_DEFAULT_SOGOU_HOTWORD_AUTO_UPDATE".equals(key)
+                || "SETTINGS_DEFAULT_RARE_WORD_INPUT".equals(key)
+                || "SETTINGS_DEFAULT_TRADITIONAL_CHINESE_INPUT".equals(key)
+                || "setting_fuzzy_pinyin_input_key".equals(key)
+                || "SETTINGS_FUZZY_PINYIN_INPUT_SIMPLIFIED_CHINESE".equals(key)
+                || "shuangpin_keyboard".equals(key);
     }
 
     private static void deferHoneyboardRuneChanges(final ClassLoader classLoader) {
