@@ -7,7 +7,7 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public final class PriorityNotificationHook implements IXposedHookLoadPackage {
-    private static final String TAG = "SamsungAINotifications";
+    private static final String TAG = "OneUI85AINotifications";
     private static final String ANDROID_PACKAGE = "android";
     private static final String RUNE_CLASS = "com.android.server.notification.NmRune";
     private static final String SERVICE_CLASS =

@@ -1,4 +1,4 @@
-# Samsung AI Notifications
+# OneUI 8.5 AI Notifications
 
 An LSPosed module that unlocks Samsung's built-in Priority Notification
 Highlights and AI Notification Summaries on compatible One UI firmware.
@@ -44,8 +44,8 @@ No Samsung APK or framework file is patched.
 
 ## Installation
 
-1. Install `dist/Samsung-AI-Notifications-v1.1.apk`.
-2. Open LSPosed and enable **Samsung AI Notifications**.
+1. Install `dist/OneUI-8.5-AI-Notifications-v1.1.apk`.
+2. Open LSPosed and enable **OneUI 8.5 AI Notifications**.
 3. Select only **System Framework** as the scope.
 4. Open the module settings and enable the desired features.
 5. Let the hook load during the next normal system initialization.
