@@ -1,22 +1,19 @@
 # OneUI 8.5 AI Notifications
 
 An LSPosed module that unlocks Samsung's built-in Priority Notification
-Highlights and AI Notification Summaries from S26 series to older devices.
+Highlights and AI Notification Summaries on compatible One UI firmware.
 
 This project does not replace `framework.jar`, `services.jar`, SystemUI, or
 Settings. It enables code that already exists in Samsung's One UI 8.5 firmware.
 
-## Tested device
+## Tested firmware
 
-- Galaxy S24 Ultra `SM-S928U1`
-- Device codename `e3q`
 - One UI 8.5
 - Android 16 / API 36
-- Build `S928U1UES6DZF2`
 - KernelSU LKM root
 - LSPosed API 102
 
-Other firmware revisions may use different class or field names. Verify your
+Other firmware revisions may use different class or field names. Always verify
 stock `services.jar` before installing on another build.
 
 ## What it changes
@@ -47,8 +44,8 @@ No Samsung APK or framework file is patched.
 
 ## Installation
 
-1. Install `dist/S24U-AI-Notifications-v1.1.apk`.
-2. Open LSPosed and enable **S24U AI Notifications**.
+1. Install `dist/OneUI-8.5-AI-Notifications-v1.1.apk`.
+2. Open LSPosed and enable **OneUI 8.5 AI Notifications**.
 3. Select only **System Framework** as the scope.
 4. Open the module settings and enable the desired features.
 5. Let the hook load during the next normal system initialization.
@@ -132,7 +129,6 @@ Git. Published upgrades must be signed with the same key as the installed APK.
 
 - Scope the module only to System Framework.
 - Keep a known-good copy of the previously installed APK.
-- Do not install S23 framework or SystemUI files on an S24 Ultra.
+- Do not install framework or SystemUI files from a different device.
 - Disable the module from LSPosed if a future firmware update removes or renames
   the target fields.
-

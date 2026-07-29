@@ -24,7 +24,7 @@ fi
 
 BUILD_TOOLS="$SDK_DIR/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK_DIR/platforms/android-36/android.jar"
-OUTPUT_APK="$DIST_DIR/S24U-AI-Notifications-v1.1.apk"
+OUTPUT_APK="$DIST_DIR/OneUI-8.5-AI-Notifications-v1.1.apk"
 
 for required_file in \
     "$BUILD_TOOLS/aapt2" \
@@ -93,7 +93,7 @@ if [ ! -f "$KEYSTORE" ]; then
         -storepass "$KEYSTORE_PASSWORD" \
         -keypass "$KEY_PASSWORD" \
         -alias "$KEYSTORE_ALIAS" \
-        -dname "CN=S24U AI Notifications,O=Local Build,C=US" \
+        -dname "CN=OneUI 8.5 AI Notifications,O=Local Build,C=US" \
         -keyalg RSA \
         -keysize 2048 \
         -validity 10000 \
@@ -110,4 +110,3 @@ fi
 
 "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$OUTPUT_APK"
 echo "$OUTPUT_APK"
-
