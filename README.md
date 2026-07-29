@@ -1,7 +1,7 @@
-# S24U AI Notifications
+# OneUI 8.5 AI Notifications
 
 An LSPosed module that unlocks Samsung's built-in Priority Notification
-Highlights and AI Notification Summaries on the Galaxy S24 Ultra.
+Highlights and AI Notification Summaries from S26 series to the S24 Ultra.
 
 This project does not replace `framework.jar`, `services.jar`, SystemUI, or
 Settings. It enables code that already exists in Samsung's One UI 8.5 firmware.
