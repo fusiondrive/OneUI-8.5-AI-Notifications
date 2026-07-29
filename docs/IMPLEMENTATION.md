@@ -2,9 +2,10 @@
 
 ## Root cause
 
-The tested S24 Ultra firmware contains the complete Priority Notification and
+The tested One UI firmware contains the complete Priority Notification and
 Notification Summary implementations. The server-side feature gates are
-disabled because `e3q` is not included in Samsung's device allowlist.
+disabled because the target device codename is not included in Samsung's
+allowlist.
 
 The stock allowlist accepts device names beginning with:
 
@@ -15,12 +16,6 @@ m3q
 m1s
 m2s
 m3s
-```
-
-The target device reports:
-
-```text
-ro.product.vendor.device=e3q
 ```
 
 The AI version gate is already satisfied:
@@ -101,4 +96,3 @@ waited because only 74 seconds had elapsed since the final update.
 construction. Changing a Secure setting after initialization cannot create a
 manager that was skipped. The module therefore sets both `NmRune` fields before
 every `NotificationManagerService` constructor.
-
