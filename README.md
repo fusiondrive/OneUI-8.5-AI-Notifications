@@ -1,7 +1,7 @@
 # OneUI 8.5 AI Notifications
 
 An LSPosed module that unlocks Samsung's built-in Priority Notification
-Highlights and AI Notification Summaries on compatible One UI firmware.
+Highlights and AI Notification Summaries on older Galaxy devices.
 
 This project does not replace `framework.jar`, `services.jar`, SystemUI, or
 Settings. It enables code that already exists in Samsung's One UI 8.5 firmware.
