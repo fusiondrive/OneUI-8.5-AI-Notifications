@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -26,6 +27,9 @@ public final class PriorityNotificationHook
     private static final String RUNE_CLASS = "com.android.server.notification.NmRune";
     private static final String SERVICE_CLASS =
             "com.android.server.notification.NotificationManagerService";
+    private static final String SUMMARY_LANGUAGE_CALLBACK_CLASS =
+            "com.android.server.notification.sec.summarize."
+                    + "NotiSummaryManager$$ExternalSyntheticLambda0";
     private static final String SMART_SUGGESTIONS_RUNE_CLASS =
             "com.samsung.android.smartsuggestions.featureconfig.rune.Rune";
     private static final String NOW_NUDGE_SETTING_HELPER_CLASS =
@@ -99,6 +103,7 @@ public final class PriorityNotificationHook
     private static void installNotificationHooks(
             XC_LoadPackage.LoadPackageParam loadPackageParam) {
         forceNotificationAiRunes(loadPackageParam.classLoader, "package load");
+        installBilingualSummaryLanguageHook(loadPackageParam.classLoader);
 
         Class<?> notificationManagerService =
                 XposedHelpers.findClassIfExists(SERVICE_CLASS, loadPackageParam.classLoader);
@@ -114,6 +119,88 @@ public final class PriorityNotificationHook
             }
         });
         log("Hook installed for system_server");
+    }
+
+    private static void installBilingualSummaryLanguageHook(ClassLoader classLoader) {
+        try {
+            Class<?> callbackClass =
+                    XposedHelpers.findClassIfExists(
+                            SUMMARY_LANGUAGE_CALLBACK_CLASS, classLoader);
+            if (callbackClass == null) {
+                log("Notification summary language callback not found");
+                return;
+            }
+            XposedBridge.hookAllMethods(
+                    callbackClass,
+                    "accept",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            if (param.args.length != 2
+                                    || !(param.args[0] instanceof Boolean)
+                                    || !((Boolean) param.args[0]).booleanValue()
+                                    || !(param.args[1] instanceof String)) {
+                                return;
+                            }
+
+                            int callbackStage =
+                                    XposedHelpers.getIntField(
+                                            param.thisObject, "$r8$classId");
+                            if (callbackStage != 0 && callbackStage != 2) {
+                                return;
+                            }
+
+                            String detectedLanguage = (String) param.args[1];
+                            String requiredLanguage;
+                            if (callbackStage == 0) {
+                                requiredLanguage = Locale.getDefault().getLanguage();
+                            } else {
+                                Object capturedLanguage =
+                                        XposedHelpers.getObjectField(
+                                                param.thisObject, "f$1");
+                                if (!(capturedLanguage instanceof String)) {
+                                    return;
+                                }
+                                requiredLanguage = (String) capturedLanguage;
+                            }
+
+                            if (isChineseOrEnglish(detectedLanguage)
+                                    && isChineseOrEnglish(requiredLanguage)
+                                    && !detectedLanguage.equalsIgnoreCase(
+                                            requiredLanguage)) {
+                                param.args[1] = requiredLanguage;
+                                log(
+                                        "Notification summary bilingual language check accepted "
+                                                + detectedLanguage
+                                                + " for "
+                                                + requiredLanguage
+                                                + " at stage "
+                                                + callbackStage);
+                            }
+                        }
+                    });
+            log("Notification summary bilingual zh/en language checks installed");
+        } catch (Throwable throwable) {
+            logThrowable(
+                    "Notification summary bilingual language hook failed", throwable);
+        }
+    }
+
+    private static boolean isChineseOrEnglish(String language) {
+        String normalized = normalizeLanguage(language);
+        return "zh".equals(normalized) || "en".equals(normalized);
+    }
+
+    private static String normalizeLanguage(String language) {
+        if (language == null) {
+            return "";
+        }
+        String normalized = language.trim().toLowerCase(Locale.ROOT);
+        int separator = normalized.indexOf('-');
+        if (separator < 0) {
+            separator = normalized.indexOf('_');
+        }
+        return separator < 0 ? normalized : normalized.substring(0, separator);
     }
 
     private static void installSmartSuggestionsNowNudgeHooks(ClassLoader classLoader) {

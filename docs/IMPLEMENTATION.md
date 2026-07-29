@@ -71,8 +71,14 @@ event schedules the first evaluation after ten seconds. A private conversation
 must be unchanged for 180 seconds; a group conversation must be unchanged for
 540 seconds.
 
-The summarizer performs language identification and rejects input whose language
-does not match the current system locale.
+The summarizer performs language identification twice: once before model
+execution and once on the generated output. Stock firmware rejects either side
+when its language does not match the current system locale.
+
+Version 1.9 hooks the shared `BiConsumer` callback and relaxes both checks only
+when the detected and required languages are members of the `zh`/`en` pair.
+The detected text and generated summary are not modified, so Chinese
+notifications remain Chinese and English notifications remain English.
 
 ## Verified runtime evidence
 

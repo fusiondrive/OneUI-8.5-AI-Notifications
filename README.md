@@ -33,6 +33,11 @@ NM_SUPPORT_AI_NOTIFICATION_PRIORITY = true
 NM_SUPPORT_AI_NOTIFICATION_SUMMARY = true
 ```
 
+For notification summaries, the module also permits Chinese and English input
+on either a Chinese or English system locale. Language detection remains
+enabled, each summary stays in the notification's original language, and
+languages outside the `zh`/`en` pair retain Samsung's stock locale check.
+
 The companion activity controls the original Samsung Secure settings through
 root:
 
@@ -89,7 +94,7 @@ XT9 database can also be selected from:
 
 ## Installation
 
-1. Install `dist/OneUI-8.5-AI-Notifications-v1.8.apk`.
+1. Install `dist/OneUI-8.5-AI-Notifications-v1.9.apk`.
 2. Open LSPosed and enable **OneUI 8.5 AI Notifications**.
 3. Select **System Framework** for notification features.
 4. For Now Nudge, also select **Smart Suggestions**, **Samsung Keyboard**, and
@@ -114,7 +119,8 @@ requires all of the following:
 - A supported messaging notification
 - At least 40 words on non-Korean system locales
 - At least 100 characters on Korean system locales
-- Notification language matching the current system language
+- Notification language matching the current system language, except that
+  version 1.9 permits the `zh`/`en` pair on either locale
 - Screen off
 - Battery above 30 percent
 - Power saving mode disabled
