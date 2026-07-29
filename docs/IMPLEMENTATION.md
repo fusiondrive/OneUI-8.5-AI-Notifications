@@ -98,7 +98,7 @@ manager that was skipped. The module therefore sets both `NmRune` fields before
 every `NotificationManagerService` constructor.
 # Now Nudge and Chinese engine implementation
 
-Version 1.6 provides a narrowly scoped keyboard-inline Now Nudge path:
+Version 1.8 provides a narrowly scoped keyboard-inline Now Nudge path:
 
 - `com.samsung.android.smartsuggestions`: forces
   `Rune.getSUPPORT_NOW_NUDGE()` to true and keeps
@@ -113,7 +113,7 @@ The module does not install the API 37 Launcher from the source firmware.
 HoneyBoard 5.9.30.97 has two relevant code layouts:
 
 - The global build uses `Y8.a`, `k7.g`, and `lj.c`.
-- The China-release build uses `sj.d`, `md.c`, and `o50.e`.
+- The China-release build uses `sj.d`, `md.c`, `l30.a`, `g40.g`, and `xo.b`.
 
 The module detects the active layout at runtime. Global-build static rune
 changes are delayed until after `HoneyBoardApplication.attachBaseContext`
@@ -121,22 +121,30 @@ finishes because initializing `Y8.a` before Koin starts crashes the keyboard.
 
 The global APK has the Java Sogou integration but does not contain the Sogou
 native libraries. A compatible Samsung-signed China/TGY HoneyBoard APK supplies
-those libraries. The offline database is extracted by the HoneyBoard process
-to:
+those libraries. The original TGY database archive is staged at:
 
 ```text
-/data/user/0/com.samsung.android.honeyboard/files/oneui85-sogou-db-v2/
+/data/user/0/com.samsung.android.honeyboard/files/oneui85-sogou-preload-v1/sogou_db.zip
 ```
 
-The database resolver is redirected to that app-owned directory. This avoids
+The `xo.b.f()` Sogou preload resolver is redirected to the parent app-owned
+directory. The `o50.e` resolver is not modified because it belongs to the
+Japanese Omron engine. This avoids
 root-created app-data directories, which cannot be repaired reliably under
 KernelSU LKM SELinux categories.
 
 On a non-China CSC, the China-release APK applies an additional preference
-visibility filter even after the Sogou engine is enabled. Version 1.6 overrides
+visibility filter even after the Sogou engine is enabled. Version 1.8 overrides
 that filter only for the Chinese input category and its Sogou, detailed
 dictionary, rare-word, Traditional Chinese, fuzzy-Pinyin, and Shuangpin
 preferences. Other HoneyBoard settings retain their stock visibility rules.
+
+The final engine name comes from `l30.a.a(int)`. The module returns `SOGOU`
+only for Simplified Chinese language ID `4653073`; every other language keeps
+Samsung's original selector result. The Sogou wrapper constructor checks
+`sj.d.D7`, so that field is enabled immediately before `g40.g` construction.
+Writing it during package load is unsafe because it initializes `sj.d` before
+HoneyBoard starts Koin.
 
 If a separately extracted XT9 payload exists under Samsung Keyboard's files
 directory, the global HoneyBoard hook changes only its cached XT9 preload path

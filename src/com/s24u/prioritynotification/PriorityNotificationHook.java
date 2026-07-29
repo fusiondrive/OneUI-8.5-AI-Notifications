@@ -36,7 +36,9 @@ public final class PriorityNotificationHook
     private static final String HONEYBOARD_DATABASE_PATH_CLASS = "lj.c";
     private static final String HONEYBOARD_CHINA_RUNE_CLASS = "sj.d";
     private static final String HONEYBOARD_CHINA_REGION_CLASS = "md.c";
-    private static final String HONEYBOARD_CHINA_DATABASE_PATH_CLASS = "o50.e";
+    private static final String HONEYBOARD_CHINA_ENGINE_SELECTOR_CLASS = "l30.a";
+    private static final String HONEYBOARD_SOGOU_ENGINE_CLASS = "g40.g";
+    private static final String HONEYBOARD_SOGOU_PRELOAD_PATH_CLASS = "xo.b";
     private static final String HONEYBOARD_COMMON_SETTINGS_FRAGMENT_CLASS =
             "com.samsung.android.honeyboard.settings.common.CommonSettingsFragmentCompat";
     private static final String HONEYBOARD_CHINESE_OPTIONS_FRAGMENT_CLASS =
@@ -56,9 +58,13 @@ public final class PriorityNotificationHook
     private static final String HONEYBOARD_DETAILED_DICTIONARY_FLAG = "x6";
     private static final String SOGOU_ASSET_PREFIX = "assets/sogou_db/";
     private static final String SOGOU_CELL_ASSET_PREFIX = "assets/sogou_cell/";
+    private static final String SOGOU_DATABASE_ARCHIVE_ASSET = "assets/sogou_db.zip";
     private static final String SOGOU_DATABASE_DIRECTORY = "files/oneui85-sogou-db-v2";
     private static final String SOGOU_CELL_DIRECTORY = "files/oneui85-sogou-cell-v2";
+    private static final String SOGOU_PRELOAD_DIRECTORY = "files/oneui85-sogou-preload-v1";
+    private static final String SOGOU_DATABASE_ARCHIVE = "sogou_db.zip";
     private static final String SOGOU_MARKER = ".oneui85_sogou_v2";
+    private static final int SIMPLIFIED_CHINESE_LANGUAGE_ID = 4653073;
     private static String modulePath;
 
     @Override
@@ -143,7 +149,10 @@ public final class PriorityNotificationHook
         }
 
         File databaseDirectory = installBundledSogouDatabase(dataDir);
-        if (databaseDirectory != null) {
+        File preloadDirectory = installBundledSogouArchive(dataDir);
+        if (preloadDirectory != null) {
+            hookSogouPreloadPath(classLoader, preloadDirectory);
+        } else if (databaseDirectory != null) {
             hookSogouDatabasePath(classLoader, databaseDirectory);
         }
         enablePortedXt9Database(classLoader, dataDir);
@@ -159,11 +168,49 @@ public final class PriorityNotificationHook
                     XposedHelpers.findClass(HONEYBOARD_CHINA_RUNE_CLASS, classLoader);
             forceBooleanResult(rune, "m3", true);
             forceBooleanResult(rune, "l3", true);
+            installChinaSogouEngineGateHook(classLoader, rune);
+            installChinaSogouEngineSelectorHook(classLoader);
             installChinaKeyboardSettingsHooks(classLoader);
-            log("Samsung Keyboard China-build Sogou and Now Nudge gates forced on");
+            log("Samsung Keyboard China-build Sogou engine and Now Nudge gates forced on");
         } catch (Throwable throwable) {
             logThrowable("Samsung Keyboard China-build feature hook failed", throwable);
         }
+    }
+
+    private static void installChinaSogouEngineGateHook(
+            ClassLoader classLoader, final Class<?> rune) {
+        Class<?> sogouEngine =
+                XposedHelpers.findClass(HONEYBOARD_SOGOU_ENGINE_CLASS, classLoader);
+        XposedBridge.hookAllConstructors(
+                sogouEngine,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) {
+                        XposedHelpers.setStaticBooleanField(rune, "D7", true);
+                    }
+                });
+        log("Samsung Keyboard Sogou engine gate scheduled at engine construction");
+    }
+
+    private static void installChinaSogouEngineSelectorHook(ClassLoader classLoader) {
+        Class<?> selector =
+                XposedHelpers.findClass(
+                        HONEYBOARD_CHINA_ENGINE_SELECTOR_CLASS, classLoader);
+        XposedBridge.hookAllMethods(
+                selector,
+                "a",
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) {
+                        if (param.args.length == 1
+                                && param.args[0] instanceof Integer
+                                && ((Integer) param.args[0]).intValue()
+                                        == SIMPLIFIED_CHINESE_LANGUAGE_ID) {
+                            param.setResult("SOGOU");
+                        }
+                    }
+                });
+        log("Samsung Keyboard Simplified Chinese engine forced to SOGOU");
     }
 
     private static void installChinaKeyboardSettingsHooks(ClassLoader classLoader) {
@@ -298,6 +345,63 @@ public final class PriorityNotificationHook
         }
     }
 
+    private static File installBundledSogouArchive(String dataDir) {
+        File preloadDirectory = new File(dataDir, SOGOU_PRELOAD_DIRECTORY);
+        File archive = new File(preloadDirectory, SOGOU_DATABASE_ARCHIVE);
+        if (archive.isFile() && archive.length() > 0) {
+            log("Bundled Sogou preload archive is already installed at "
+                    + archive.getAbsolutePath());
+            return preloadDirectory;
+        }
+        if (modulePath == null || modulePath.isEmpty()) {
+            log("Module path unavailable; bundled Sogou preload archive was not installed");
+            return null;
+        }
+
+        try (ZipFile moduleApk = new ZipFile(modulePath)) {
+            ZipEntry entry = moduleApk.getEntry(SOGOU_DATABASE_ARCHIVE_ASSET);
+            if (entry == null) {
+                log("Bundled Sogou preload archive is missing from the module");
+                return null;
+            }
+            if (!preloadDirectory.exists() && !preloadDirectory.mkdirs()) {
+                throw new IllegalStateException(
+                        "Could not create destination "
+                                + preloadDirectory.getAbsolutePath());
+            }
+            try (InputStream input =
+                            new BufferedInputStream(moduleApk.getInputStream(entry));
+                    BufferedOutputStream output =
+                            new BufferedOutputStream(new FileOutputStream(archive))) {
+                byte[] buffer = new byte[32768];
+                int count;
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
+                }
+            }
+            log("Bundled Sogou preload archive installed at "
+                    + archive.getAbsolutePath());
+            return preloadDirectory;
+        } catch (Throwable throwable) {
+            logThrowable("Bundled Sogou preload archive installation failed", throwable);
+            return null;
+        }
+    }
+
+    private static void hookSogouPreloadPath(
+            ClassLoader classLoader, File preloadDirectory) {
+        try {
+            String path = preloadDirectory.getAbsolutePath() + File.separator;
+            Class<?> preloadPathClass =
+                    XposedHelpers.findClass(
+                            HONEYBOARD_SOGOU_PRELOAD_PATH_CLASS, classLoader);
+            XposedBridge.hookAllMethods(preloadPathClass, "f", resultHook(path));
+            log("Samsung Keyboard Sogou preload path forced to " + path);
+        } catch (Throwable throwable) {
+            logThrowable("Samsung Keyboard Sogou preload path hook failed", throwable);
+        }
+    }
+
     private static void hookSogouDatabasePath(
             ClassLoader classLoader, File databaseDirectory) {
         try {
@@ -305,18 +409,13 @@ public final class PriorityNotificationHook
             Class<?> globalPathClass =
                     XposedHelpers.findClassIfExists(
                             HONEYBOARD_DATABASE_PATH_CLASS, classLoader);
-            if (globalPathClass != null) {
-                XposedBridge.hookAllMethods(globalPathClass, "a", resultHook(path));
-                XposedBridge.hookAllMethods(globalPathClass, "b", resultHook(path));
-                XposedBridge.hookAllMethods(globalPathClass, "c", resultHook(path));
-            } else {
-                Class<?> chinaPathClass =
-                        XposedHelpers.findClass(
-                                HONEYBOARD_CHINA_DATABASE_PATH_CLASS, classLoader);
-                XposedBridge.hookAllMethods(chinaPathClass, "a", resultHook(path));
-                XposedBridge.hookAllMethods(chinaPathClass, "b", resultHook(path));
-                XposedBridge.hookAllMethods(chinaPathClass, "e", resultHook(path));
+            if (globalPathClass == null) {
+                log("Samsung Keyboard legacy Sogou database path class is unavailable");
+                return;
             }
+            XposedBridge.hookAllMethods(globalPathClass, "a", resultHook(path));
+            XposedBridge.hookAllMethods(globalPathClass, "b", resultHook(path));
+            XposedBridge.hookAllMethods(globalPathClass, "c", resultHook(path));
             log("Samsung Keyboard Sogou database path forced to " + path);
         } catch (Throwable throwable) {
             logThrowable("Samsung Keyboard Sogou database path hook failed", throwable);
