@@ -1,0 +1,7 @@
+/build/
+/verify_*/
+*.idsig
+*.keystore
+*.jks
+.DS_Store
+
